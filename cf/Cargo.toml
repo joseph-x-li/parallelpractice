@@ -8,6 +8,6 @@ edition = "2021"
 
 [[bin]]
 name = "now"
-path = "src/1686A.rs"
+path = "src/71A.rs"
 
 [dependencies]
