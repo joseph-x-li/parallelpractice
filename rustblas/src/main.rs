@@ -1,6 +1,7 @@
-mod arr;
-
+use rustblas::arr::NDArray;
 fn main() {
-  println!("Hello, world!");
-  let x = Vec::<i32>::new();
+  let mut x = NDArray::<i32>::random((5, 5));
+  println!("{}", x);
+  x.transpose();
+  println!("{}", x);
 }
