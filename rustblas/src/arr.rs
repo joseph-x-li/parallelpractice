@@ -1,67 +1,83 @@
-use rand::distributions::{Distribution, Standard};
-use std::fmt::{self, Debug, Display};
+// use rand::distributions::{Distribution, Standard};
+use num::{self, Num};
+use std::{
+  alloc::{alloc_zeroed, dealloc, Layout, LayoutError},
+  fmt::Display,
+};
 
-pub struct NDArray<T> {
-  data: Vec<T>,          // Vec stores length data
-  shape: (usize, usize), // must be 2D for now
-  ndim: usize,
+// pub struct Array1D<T, const D0: usize> {
+//   data: *mut T,
+//   strides: (usize,), // not in bytes, but in indicies
+// }
+
+#[derive(Debug)]
+pub struct Array2D<T, const D1: usize, const D0: usize>
+where
+T: Num + Display + Copy,
+{
+  buf: *mut T,
   strides: (usize, usize), // not in bytes, but in indicies
 }
 
-impl<T> NDArray<T>
+impl<T, const D1: usize, const D0: usize> Array2D<T, D1, D0>
 where
-  Standard: Distribution<T>,
+  T: Num + Display + Copy,
 {
-  pub fn new() -> Self {
-    NDArray {
-      data: Vec::new(),
-      shape: (0, 0),
-      ndim: 2,
-      strides: (0, 0),
-    }
+  pub fn zeros() -> Result<Self, LayoutError> {
+    Ok(Array2D {
+      buf: unsafe { alloc_zeroed(Layout::array::<i32>(D0 * D1)?) as *mut T },
+      strides: (D1, 1),
+    })
   }
 
-  pub fn random(shape: (usize, usize)) -> Self {
-    let mut empty_data = Vec::new();
-    empty_data.resize_with(shape.0 * shape.1, || rand::random::<T>());
-
-    NDArray {
-      data: empty_data,
-      shape,
-      ndim: 2,
-      strides: (1, shape.0),
-    }
-  }
-
-  pub fn transpose(&mut self) {
-    self.strides = (self.strides.1, self.strides.0);
-    self.shape = (self.shape.1, self.shape.0);
+  // Transpose
+  pub fn transpose(self) -> Array2D<T, D0, D1> {
+    let out = Array2D {
+      buf: self.buf,
+      strides: (self.strides.1, self.strides.0),
+    };
+    std::mem::forget(self);
+    out
   }
 }
 
-impl<T> Iter for NDArray<T{
-  type Item = T;
-
-  fn next(&self) -> Option<Self::Item> {
-    self.data.pop()
-  }
-}
-
-impl<T> Display for NDArray<T>
+impl<T, const D1: usize, const D0: usize> Display for Array2D<T, D1, D0>
 where
-  T: Debug,
+  T: Num + Display + Copy,
 {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "[")?;
-    let (st0, st1) = self.strides;
-    let (rows, cols) = self.shape;
-    for r in 0..rows {
-      for c in 0..cols {
-        write!(f, "{:?} ", self.data[r * st0 + c * st1])?;
+    for idx1 in 0..D1 {
+      if idx1 == 0 {
+        write!(f, "[")?;
+      } else {
+        write!(f, " [")?;
       }
-      if r 
-      write!(f, "\n")?;
+      for idx0 in 0..D0 {
+        let bufidx = idx1 * self.strides.1 + idx0 * self.strides.0;
+        let item = unsafe { *self.buf.add(bufidx) };
+        write!(f, "{}", item)?;
+        if idx0 < D0 - 1 {
+          write!(f, ", ")?
+        }
+      }
+      if idx1 < D1 - 1 {
+        writeln!(f, "],")?
+      } else {
+        write!(f, "]")?
+      }
     }
     write!(f, "]")
+  }
+}
+
+impl<T, const D1: usize, const D0: usize> Drop for Array2D<T, D1, D0>
+where
+  T: Num + Display + Copy,
+{
+  fn drop(&mut self) {
+    unsafe {
+      dealloc(self.buf as *mut u8, Layout::array::<i32>(D0 * D1).unwrap());
+    }
   }
 }

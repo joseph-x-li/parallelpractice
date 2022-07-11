@@ -1,7 +1,13 @@
-use rustblas::arr::NDArray;
-fn main() {
-  let mut x = NDArray::<i32>::random((5, 5));
+use anyhow::Result;
+use rustblas::arr::Array2D;
+
+fn main() -> Result<()> {
+  let x: Array2D<i32, 2, 3> = Array2D::zeros()?;
+  println!("{:?}", x);
   println!("{}", x);
-  x.transpose();
+  println!("{:?}", x);
+  let x = x.transpose();
+  println!("{:?}", x);
   println!("{}", x);
+  Ok(())
 }
