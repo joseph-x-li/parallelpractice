@@ -9,7 +9,11 @@ fn read_int(buf: &mut String) -> i32 {
 
 fn read_ints(buf: &mut String) -> Vec<i32> {
   io::stdin().read_line(buf).ok();
-  let res = buf.trim().split(" ").map(|x| x.parse::<i32>().unwrap()).collect();
+  let res = buf
+    .trim()
+    .split(" ")
+    .map(|x| x.parse::<i32>().unwrap())
+    .collect();
   buf.clear();
   res
 }
@@ -30,19 +34,21 @@ fn main() {
       }
     }
     if num_odd == 0 {
-      let fastest = aes.into_iter().map(|mut a| {
-        let mut place_counter = 0;
-        while a % 2 == 0 {
-          place_counter += 1;
-          a >>= 1;
-        }
-        place_counter
-      }).reduce(i32::min).unwrap();
+      let fastest = aes
+        .into_iter()
+        .map(|mut a| {
+          let mut place_counter = 0;
+          while a % 2 == 0 {
+            place_counter += 1;
+            a >>= 1;
+          }
+          place_counter
+        })
+        .reduce(i32::min)
+        .unwrap();
       println!("{}", num_even - 1 + fastest);
     } else {
       println!("{}", num_even);
     }
-
-
   }
 }

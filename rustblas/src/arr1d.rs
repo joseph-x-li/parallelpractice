@@ -1,30 +1,53 @@
-use crate::arr2d;
-use const_guards::guard;
-use num::{self, Num};
+use num::Num;
+// use const_guards::guard;
 use std::{fmt::Display, ops::Index};
 
-pub struct ArrView1DMut<'a, T, const D0: usize>
+pub struct ArrView1D<'a, T, const D0: usize>
 where
-  T: Num + Display + Copy,
+  T: Display + Copy + Num,
 {
-  buf: &'a mut T,
-  strides: (usize,),
+  pub (crate) buf: &'a Box<[T]>,
+  pub (crate) offset: usize, // Skip these many elements
+  pub (crate) strides: usize,
 }
 
-impl<'a, T, const D0: usize> Index<usize> for ArrView1DMut<'a, T, D0> 
+impl<T, const D0: usize> ArrView1D<'_, T, D0> 
 where
-  T: Num + Display + Copy, {
+  T: Display + Copy + Num {
+    pub fn col(&self, idx: usize) -> &T {
+      &self.buf[self.offset + idx * self.strides]
+    }
+}
+
+impl<T, const D0: usize> Index<usize> for ArrView1D<'_, T, D0>
+where
+  T: Display + Copy + Num,
+{
   type Output = T;
   fn index(&self, idx: usize) -> &Self::Output {
-    let idx = idx * self.strides.0;
-    let buf: *const T = self.buf as *const T;
-    unsafe { &*buf.add(idx) }
+    self.col(idx)
   }
 }
 
-struct ArrView1dIter<'a, T>
+impl<T, const D0: usize> Display for ArrView1D<'_, T, D0> 
 where
-  T: Num + Display + Copy,
+  T: Display + Copy + Num,
+  {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+      write!(f, "[")?;
+      for idx0 in 0..D0 {
+        write!(f, "{}", self.col(idx0))?;
+        if idx0 < D0 - 1 {
+          write!(f, ", ")?;
+        }
+      }
+      write!(f, "]")
+  }
+}
+
+struct ArrView1DIter<'a, T>
+where
+  T: Display + Copy,
 {
   buf: &'a mut T,
   stride: usize,
@@ -32,12 +55,12 @@ where
   len: usize,
 }
 
-impl<'a, T> Iterator for ArrView1dIter<'a, T> {
-  type Item = &'a mut T;
+// impl<'a, T> Iterator for ArrView1DIter<'a, T> {
+//   type Item = &'a mut T;
 
-  fn next(&mut self) -> Option<Self::Item> {
-    if (pos < len) {
-      Some()
-    }
-  }
-}
+//   fn next(&mut self) -> Option<Self::Item> {
+//     if (pos < len) {
+//       Some()
+//     }
+//   }
+// }

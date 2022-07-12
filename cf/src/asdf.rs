@@ -1,22 +1,29 @@
 #[derive(Debug)]
-struct Asdf<'a> {
-  a: &'a mut i32,
+struct Asdf {
+  a: *mut i32,
+  // a: &'a mut [i32],
 }
 
-fn modify(ruct: &Asdf) {
-  // *ruct.a = 7;
+impl Asdf {
+  fn getbsdf<'a>(&'a self) -> Bsdf<'a> {
+    Bsdf { a: &self.a }
+  }
+}
+
+#[derive(Debug)]
+struct Bsdf<'a> {
+  a: &'a *mut i32,
+  // a: &'a mut [i32],
+}
+
+fn modify<'a>() -> () {
+  let a = Asdf { a: 8 as *mut i32 };
+  let b = a.getbsdf();
+  // println!("{:?}", ptr);
+  // println!("{:?}", asdf);
+  ()
 }
 
 fn main() {
-  let mut b = 6;
-  let ruct = &Asdf{ a: &mut b };
-  let buct = Asdf{ a: &mut b };
-  let cuct = Asdf{ a: &mut b };
-  let duct = Asdf{ a: &mut b };
-  let c = &mut b;
-  println!("{}", c);
-  println!("{:?}", ruct);
-  println!("{:?}", buct);
-  println!("{:?}", cuct);
-  println!("{:?}", duct);
+  modify();
 }

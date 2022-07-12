@@ -1,6 +1,5 @@
 use std::io;
 
-
 fn get_int(buf: &mut String) -> i32 {
   io::stdin().read_line(buf).ok();
   let res = buf.trim().parse().unwrap();
@@ -10,7 +9,11 @@ fn get_int(buf: &mut String) -> i32 {
 
 fn get_ints(buf: &mut String) -> Vec<i32> {
   io::stdin().read_line(buf).ok();
-  let res = buf.trim().split(" ").map(|x| {x.parse::<i32>().unwrap()}).collect();
+  let res = buf
+    .trim()
+    .split(" ")
+    .map(|x| x.parse::<i32>().unwrap())
+    .collect();
   buf.clear();
   res
 }
@@ -24,16 +27,16 @@ fn main() {
     let nums = get_ints(&mut buf);
     let total = nums.iter().sum::<i32>();
     let avg = total / m;
-    
+
     if avg * m != total {
       println!("NO");
-      continue
+      continue;
     }
 
     for x in nums {
       if x == avg {
         println!("YES");
-        continue 'reset
+        continue 'reset;
       }
     }
     println!("NO");
